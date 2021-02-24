@@ -1,0 +1,88 @@
+version: '3'
+# For you to be able to use this file...you need to install docker and docker compose on your machine
+# so that you can be able to setup docker containers for the app to work
+
+services:
+  mysql:
+    image: mariadb:10.3.17
+    container_name: mysql
+    networks:
+        - demo-network
+    command: --max_allowed_packet=256M
+             --innodb-buffer-pool-size=2048M
+    volumes:
+      - "./data/db:/var/lib/mysql:delegated"
+    ports:
+       - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    restart: always
+
+  litespeed:
+    image: litespeedtech/openlitespeed:${OLS_VERSION}-${PHP_VERSION}
+    container_name: web
+    networks:
+      - demo-network
+    env_file:
+      - .env
+    volumes:
+      - ./lsws/conf:/usr/local/lsws/conf
+      - ./lsws/admin-conf:/usr/local/lsws/admin/conf
+      - ./bin/container:/usr/local/bin
+      - ./sites:/var/www/vhosts/
+      - ./acme:/root/.acme.sh/
+      - ./logs:/usr/local/lsws/logs/
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+      - 7080:7080
+    restart: always
+    environment:
+      TZ: ${TimeZone}
+
+  phpmyadmin:
+    #image: bitnami/phpmyadmin:latest
+    image: bitnami/phpmyadmin:5.0.2-debian-10-r72
+    container_name: phpmyadmin
+    networks:
+      - demo-network
+    ports:
+      - 8443:443
+    environment:
+        DATABASE_HOST: mysql
+    restart: always
+
+# Defining our Elasticsearch container
+# "elasticsearch" will be the network alias for this container.
+  elasticsearch:
+    image: elasticsearch:7.8.1
+    container_name: elasticsearch
+    networks:
+      - demo-network
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      discovery.type: single-node
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - demo-network
+    restart: always
+    volumes:
+      - redis-data:/data
+
+#The network where all the containers will live
+networks:
+  demo-network:
+
+volumes:
+    #add internal data volume so that data persists
+    redis-data:
+        external: false
