@@ -64,12 +64,14 @@ body:not(.mobile-nav) .page-header.sticky-header{
     font-size: .875rem;
 }
 
-.theme-pearl .page-wrapper .page-header.sticky-header.page-header-v3 .sections.nav-sections {
-    margin-left: 0 0 0 0 !important;
+:root .theme-pearl .page-wrapper .page-header.sticky-header:not(.page-header-v4).page-header-v3 .sections.nav-sections {
+    margin: 0px !important;
     position: absolute;
-}
+    border: 0px #fff;
+    border-radius: 3px;
+  }
 
 .theme-pearl .page-wrapper .page-header.sticky-header .logo img {
-    width: 96 !important;
-    height: 34 !important;
+    width: 96px !important;
+    height: 34px !important;
 }
